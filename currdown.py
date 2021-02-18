@@ -1,26 +1,18 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb  5 01:04:37 2021
 
-@author: lyrdo
-"""
 
 from functools import reduce
 import requests
 import mysql.connector
 from datetime import datetime 
 import time
+import requests
+import json
+from bs4 import BeautifulSoup
 
-from selenium import webdriver
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
-wd = webdriver.Chrome('D:\download\chromedriver_win32 (10)\chromedriver.exe',chrome_options=chrome_options) 
 def Average(lst): 
         return reduce(lambda a, b: a + b, lst) / len(lst)
 
-
+    #%%
 def getcurr():
     
     
@@ -80,13 +72,20 @@ def getcurr():
     
     
     
-    #driver.get("https://cgifederal.secure.force.com/?language=Russian&country=Russia")
-    wd.get("https://garantex.io/")
-     
-    time.sleep(5)
-    
-    inputElement = wd.find_element_by_class_name("form_price_usdt_ask")
-    usdt_rub = float(inputElement.text)
+    URL = 'https://garantex.io/'
+
+    page = requests.get(URL)
+    soup = BeautifulSoup(page.content)
+    soups = soup.findAll('script')
+    usdt_rub = 0.3
+    while usdt_rub ==0.3:
+      for elem in soups:
+        if 'window.order_data =' in elem.text:
+            w =json.loads(elem.text.split('window.order_data =')[1].split('window.bid_unit =')[0].replace(';',''))
+		
+            usdt_rub = float(w['ask'][0]['usdt_price'])
+            print(usdt_rub )
+      time.sleep(3)
     status = False
     while status == False:
         try:
