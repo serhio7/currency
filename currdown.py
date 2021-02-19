@@ -1,5 +1,10 @@
+#!/usr/bin/env python
+import threading
 
-
+from flask import Flask, request, jsonify, Response
+from flask_cors import CORS
+import requests
+import time
 from functools import reduce
 import requests
 import mysql.connector
@@ -8,14 +13,23 @@ import time
 import requests
 import json
 from bs4 import BeautifulSoup
+from urllib3.exceptions import MaxRetryError
+
+app = Flask(__name__)
+CORS(app)
 
 def Average(lst): 
         return reduce(lambda a, b: a + b, lst) / len(lst)
 
-    #%%
-def getcurr():
-    
-    
+@app.route('/metrics')
+def api_line():
+   
+
+    return ''
+
+
+def generate_report():
+
     
     sams = []
     for elem in range(1,3):
@@ -64,6 +78,7 @@ def getcurr():
     
     usdrub = response.json()['rates']['USDRUB']['rate']
 
+    print(usdrub)
     
     
     
@@ -71,21 +86,14 @@ def getcurr():
     
     
     
-    
-    URL = 'https://garantex.io/'
 
-    page = requests.get(URL)
-    soup = BeautifulSoup(page.content)
-    soups = soup.findAll('script')
-    usdt_rub = 0.3
-    while usdt_rub ==0.3:
-      for elem in soups:
-        if 'window.order_data =' in elem.text:
-            w =json.loads(elem.text.split('window.order_data =')[1].split('window.bid_unit =')[0].replace(';',''))
-		
-            usdt_rub = float(w['ask'][0]['usdt_price'])
-            print(usdt_rub )
-      time.sleep(3)
+    params = (
+    ('market', 'usdtrub'),
+)
+
+    response = requests.get('https://garantex.io/api/v2/trades', params=params)
+
+    usdt_rub= float(response.json()[0]['price'])
     status = False
     while status == False:
         try:
@@ -107,7 +115,19 @@ def getcurr():
     cursor.execute(sql, val)
     
     cnx.commit()
-while True:    
-    getcurr()    
-    time.sleep(60)
 
+
+
+
+def _do_update():
+    while True:
+        generate_report()
+        time.sleep(300)
+
+
+if __name__ == '__main__':
+    mThread = threading.Thread(target=_do_update)
+    mThread.daemon = True
+    mThread.start()
+
+    app.run(host='0.0.0.0', port=9099)
