@@ -21,11 +21,11 @@ CORS(app)
 def Average(lst): 
         return reduce(lambda a, b: a + b, lst) / len(lst)
 
-@app.route('/metrics')
+@app.route("/") 
 def api_line():
    
 
-    return ''
+    return 'sdfsdf'
 
 
 def generate_report():
