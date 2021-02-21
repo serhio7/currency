@@ -96,5 +96,5 @@ def home_view():
                 
                 cnx.commit()
                 yield str(usdrub)
-                time.sleep(300)
+                time.sleep(10)
         return Response(generate(), content_type='text/event-stream')
